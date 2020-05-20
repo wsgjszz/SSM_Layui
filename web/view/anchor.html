@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../layui/css/layui.css" media="all">
+    <style type="text/css">
+        /* 清除a标签的默认样式 */
+        /*包含以下四种的链接*/
+        a {
+            text-decoration: none;
+            color: #ffffff;
+        }
+
+        /*正常的未被访问过的链接*/
+        a:link {
+            text-decoration: none;
+            color: #ffffff;
+        }
+
+        /*已经访问过的链接*/
+        a:visited {
+            text-decoration: none;
+            color: #ffffff;
+        }
+
+        /*鼠标划过(停留)的链接*/
+        a:hover {
+            text-decoration: none;
+            color: #ffffff;
+        }
+
+        /* 正在点击的链接*/
+        a:active {
+            text-decoration: none;
+            color: #ffffff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <table class="layui-hide" id="test" lay-filter="test"></table>
+
+    <script type="text/html" id="toolbarDemo">
+  <div class="layui-btn-container">
+    <button class="layui-btn layui-btn-sm" lay-event="add"><a style="text-decoration: none;" href="./create.html" target="my_iframe">创建直播间</a></button>
+  </div>
+</script>
+
+    <script type="text/html" id="barDemo">
+  <a class="layui-btn layui-btn-xs" lay-event="detail">查看详情</a>
+  <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+
+    <script src="../layui/layui.js" charset="utf-8"></script>
+
+    <script>
+        layui.use(['table', 'jquery', 'layer'], function () {
+            var table = layui.table,
+                layer = layui.layer,
+                $ = layui.jquery;
+
+            table.render({
+                elem: '#test'
+                , url: 'http://127.0.0.1:8080/bb/anchor'
+                , toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+                , title: '用户数据表'
+                , page: true
+                , cols: [[
+                    { title: '序号', type: 'numbers', fixed: 'left', sort: true, width: 100, align: 'center' }
+                    , { field: 'nickname', title: '主播昵称', fixed: 'left', edit: 'text' }
+                    , { field: 'uid', title: '直播间ID', fixed: 'left' }
+                    , { field: 'uname', title: '直播间名称', fixed: 'left', edit: 'text' }
+                    , { field: 'address', title: '直播间地址', fixed: 'left', width: 300 }
+                    , { field: 'category', title: '类别', fixed: 'left', templet: function (d) { return d.category.cname } }
+                    , { fixed: 'right', title: '操作', width: 200, align: 'center', toolbar: '#barDemo' }
+                ]]
+                , response: {
+                    statusCode: 200 //规定成功的状态码，默认：0
+                }
+            });
+
+            //头工具栏事件
+            table.on('toolbar(test)', function (obj) {
+                var data = obj.data;
+            });
+
+            //监听表格编辑事件
+            table.on('edit(test)', function (obj) { //注：edit是固定事件名，test是table原始容器的属性 lay-filter="对应的值"
+                //发送更新请求
+                $.ajax({
+                    url: 'http://127.0.0.1:8080/bb/anchor',
+                    method: 'PUT',
+                    data: {
+                        "id": obj.data.id,
+                        "nickname": obj.data.nickname,
+                        "uid": obj.data.uid,
+                        "uname": obj.data.uname,
+                        "address": obj.data.address,
+                        "cid": obj.data.cid
+                    },
+                    success: res => {
+                        console.log(res)
+                        if (res.code == 200) {
+                            layer.msg('更新成功')
+                        } else if (res.code == 500) {
+                            layer.msg('更新失败')
+                        }
+                    },
+                    error: err => {
+                        console.log(err)
+                        layer.msg('更新失败')
+                    }
+                })
+            });
+
+            //监听行工具事件
+            table.on('tool(test)', function (obj) {
+                var data = obj.data;
+                if (obj.event === 'del') {
+                    layer.confirm('确定删除么', function (index) {
+                        //向服务端发送删除指令
+                        $.ajax({
+                            url: 'http://127.0.0.1:8080/bb/anchor/' + data.id,
+                            method: 'DELETE',
+                            data: {},
+                            success: res => {
+                                console.log(res)
+                                if (res.code == 200) {
+                                    layer.msg('删除成功')
+                                    obj.del();
+                                    layer.close(index);
+                                } else if (res.code == 500) {
+                                    layer.msg('删除失败')
+                                }
+                            },
+                            error: err => {
+                                console.log(err)
+                                layer.msg('删除失败')
+                            }
+                        })
+                    });
+                } else if (obj.event == 'detail') {
+                    var index = layer.open({
+                        type: 2,
+                        title: "直播间详情",
+                        area: ['80%', '90%'],
+                        fix: false,
+                        maxmin: true,
+                        shadeClose: true,
+                        shade: 0.4,
+                        skin: 'layui-layer-rim',
+                        content: ["./detail.html?id="+data.id],
+                        data:obj.data
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

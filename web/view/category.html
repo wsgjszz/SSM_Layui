@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../layui/css/layui.css" media="all">
+</head>
+
+<body>
+
+    <table class="layui-hide" id="test" lay-filter="test"></table>
+
+    <script type="text/html" id="toolbarDemo">
+  <div class="layui-btn-container">
+    <button class="layui-btn layui-btn-sm" lay-event="add">新增分类</button>
+  </div>
+</script>
+
+    <script type="text/html" id="barDemo">
+  <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+  <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+
+    <script src="../layui/layui.js" charset="utf-8"></script>
+
+    <script>
+        layui.use(['table', 'jquery', 'layer'], function () {
+            var table = layui.table,
+                layer = layui.layer,
+                $ = layui.jquery;
+
+            table.render({
+                elem: '#test'
+                , url: 'http://127.0.0.1:8080/bb/category'
+                , toolbar: '#toolbarDemo' //开启头部工具栏，并为其绑定左侧模板
+                , title: '用户数据表'
+                , page: true
+                , cols: [[
+                    { title: '序号', type: 'numbers', fixed: 'left', sort: true, width: 100, align: 'center' }
+                    , { field: 'cname', title: '分类名', fixed: 'left' }
+                    , { fixed: 'right', title: '操作', width: 200, align: 'center', toolbar: '#barDemo' }
+                ]]
+                , response: {
+                    statusCode: 200 //规定成功的状态码，默认：0
+                }
+            });
+
+            //头工具栏事件
+            table.on('toolbar(test)', function (obj) {
+                var data = obj.data;
+                if (obj.event === 'add') {
+                    layer.prompt({
+                        title: '请输入分类名称',
+                        formType: 2
+                    }, function (value, index) {
+                        //向服务端发送指令
+                        $.ajax({
+                            url: 'http://127.0.0.1:8080/bb/category',
+                            method: 'POST',
+                            data: { "cname": value },
+                            success: res => {
+                                console.log(res)
+                                if (res.code == 200) {
+                                    layer.msg('新增成功，请刷新页面')
+                                    layer.close(index);
+                                } else if (res.code == 500) {
+                                    layer.msg('新增失败')
+                                }
+                            },
+                            error: err => {
+                                console.log(err)
+                                layer.msg('新增失败')
+                            }
+                        })
+                    });
+                }
+            });
+
+            //监听行工具事件
+            table.on('tool(test)', function (obj) {
+                var data = obj.data;
+                if (obj.event === 'del') {
+                    layer.confirm('确定删除么', function (index) {
+                        //向服务端发送删除指令
+                        $.ajax({
+                            url: 'http://127.0.0.1:8080/bb/category/' + data.id,
+                            method: 'DELETE',
+                            data: {},
+                            success: res => {
+                                console.log(res)
+                                if (res.code == 200) {
+                                    layer.msg('删除成功')
+                                    obj.del();
+                                    layer.close(index);
+                                } else if (res.code == 500) {
+                                    layer.msg('删除失败')
+                                }
+                            },
+                            error: err => {
+                                console.log(err)
+                                layer.msg('删除失败')
+                            }
+                        })
+                    });
+                } else if (obj.event === 'edit') {
+                    layer.prompt({
+                        formType: 2
+                        , value: data.cname
+                    }, function (value, index) {
+                        var json = {
+                            "id": data.id,
+                            "cname": value
+                        }
+                        //向服务端发送指令
+                        $.ajax({
+                            url: 'http://127.0.0.1:8080/bb/category',
+                            method: 'PUT',
+                            data: { "id": data.id, "cname": value },
+                            success: res => {
+                                console.log(res)
+                                if (res.code == 200) {
+                                    obj.update({
+                                        cname: value
+                                    });
+                                    layer.close(index);
+                                } else if (res.code == 500) {
+                                    layer.msg('编辑失败')
+                                }
+                            },
+                            error: err => {
+                                console.log(err)
+                            }
+                        })
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

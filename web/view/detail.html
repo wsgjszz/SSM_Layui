@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../layui/css/layui.css">
+    <style type="text/css">
+        body {
+            background-color: #dfdfdc;
+        }
+        .card {
+            background-color: #ffffff;
+            margin: 40px 15px 10px 15px;
+            padding-top: 5px;
+            height: 180px;
+        }
+        .image{
+            border: solid #999898 2px;
+            position: relative;
+            top: -40px;
+        }
+        .card-text {
+            line-height: 30px;
+            padding-left: 10px;
+        }
+        .margin{
+            margin-top: 30px;
+        }
+        .card2 {
+            background-color: #ffffff;
+            margin: 10px 15px;
+            padding-top: 5px;
+            height: 160px;
+            line-height: 30px;
+            padding-left: 40px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <div class="layui-container">
+            <div class="layui-row">
+                <div class="layui-col-md2">
+                    <div class="layui-inline ">
+                        <img class="layui-circle image" width="80px" heigth="80px"
+                            src="https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1589814420046&di=c1f895b8acf715d590983d1e2990c4ad&imgtype=0&src=http%3A%2F%2Fi2.hdslb.com%2Fbfs%2Fface%2F558206a3267f5756bc4309ad8e4527d61ec5c7a2.jpg">
+                    </div>
+                </div>
+                <div class="layui-col-md7 margin"><strong id="nickname">爱做饭的芋头SAMA</strong></div>
+                <div class="layui-col-md3 margin">直播间ID：<text id="uid" style="color: #6cd2fa;">92703634</text></div>
+            </div>
+            <!-- 蓝色分割线 -->
+            <hr class="layui-bg-blue">
+            <div class="layui-row">
+                <div class="layui-col-md3 card-text">直播间地址: <text id="address"
+                        style="color: #6cd2fa;">https://live.bilibili.com/92703634</text></div>
+            </div>
+        </div>
+    </div>
+    <div class="card2">
+        <h3>直播分类:</h3>
+        <div><text id="cname" style="color: #6cd2fa;">生活</text></div>
+        <h3>房间标题:</h3>
+        <div><text id="uname" style="color: #6cd2fa;">这世界有bug</text></div>
+        <button class="layui-btn layui-btn-sm layui-btn-normal">开始直播</button>
+    </div>
+</body>
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
+<script src="../layui/layui.js"></script>
+<script>
+    // 获取传递的id参数
+    var id = parseInt(window.location.search.substring(4))
+    $.ajax({
+        url: 'http://127.0.0.1:8080/bb/anchor/' + id,
+        method: 'GET',
+        data: {},
+        success: res => {
+            console.log(res)
+            $("#nickname").html(res.data.nickname)
+            $("#uid").html(res.data.uid)
+            $("#address").html(res.data.address)
+            $("#uname").html(res.data.uname)
+            $("#cname").html(res.data.category.cname)
+        },
+        error: err => {
+            console.log(err)
+        }
+    })
+</script>
+
+</html>
